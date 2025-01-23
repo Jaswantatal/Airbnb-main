@@ -1,0 +1,133 @@
+<%layout("layouts/boilerplate")%>
+
+
+
+
+<body>
+  <div class="body-all">
+  <div>
+   <div id="filter" class="navbar-expand-lg"> 
+
+    <div class="filter">
+     <div> <i class="fa-solid fa-fire"></i> </div>
+      <p>Trending</p>
+    </div>
+  
+    <div class="filter">
+     <div> <i class="fa-solid fa-bed"></i> </div>
+      <p>Rooms</p>
+    </div>
+
+    <div class="filter">
+      <div> <i class="fa-solid fa-mountain-city"></i> </div>
+       <p>Iconic city</p>
+     </div>
+
+     <div class="filter">
+      <div> <i class="fa-solid fa-mountain"></i> </div>
+       <p>Mountains</p>
+     </div>
+
+     <div class="filter">
+      <div> <i class="fa-brands fa-fort-awesome"></i>  </div>
+       <p>Castles</p>
+     </div>
+
+     <div class="filter">
+      <div> <i class="fa-solid fa-person-swimming"></i> </div>
+       <p>Amazing pools</p>
+     </div>
+
+     <div class="filter">
+      <div> <i class="fa-solid fa-campground"></i> </div>
+       <p>Camping</p>
+     </div>
+
+
+     <div class="filter">
+      <div> <i class="fa-solid fa-cow"></i> </div>
+       <p>Farms</p>
+     </div>
+
+
+     <div class="filter">
+      <div> <i class="fa-solid fa-snowflake"></i> </div>
+       <p>Aritic</p>
+     </div>
+
+     <div class="filter">
+      <div> <i class="fa-solid fa-igloo"></i> </div>
+       <p>Dome</p>
+     </div>
+
+          <div class="filter">
+      <div> <i class="fa-solid fa-ship"></i> </div>
+       <p>Yacht</p>
+     </div> 
+
+    </div>
+
+
+     <div class="tax-toggle-btn">
+     <div class="form-check-reverse form-switch">
+      <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Display total price</label>
+    </div>
+  </div>
+
+  </div>
+
+
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3 ">
+    <% for (let listing of allListing) { %>
+    <a href="/listings/<%= listing._id %>">
+      <div class="card col listing-card">
+        <img src="<%= listing.image.url %>" class="card-img-top card-detail" alt="listing image" style="height: 20rem;">
+        <div class="card-body">
+          <b> <%= listing.title %> </b> <br>
+          <p class="card-text ">
+            <b data-base-price="<%= listing.price %>">₹ <%= listing.price.toLocaleString("en-IN") %></b> / Night
+            <i class="tax-info"> &nbsp;  Incl 18% GST</i>
+          </p>
+        </div>
+      </div>
+    </a>
+    <% } %>
+  </div>
+
+</div>
+
+<script>
+  const taxSwitch = document.getElementById("flexSwitchCheckDefault");
+  const listings = document.querySelectorAll(".listing-card"); // Select all listing cards
+
+  taxSwitch.addEventListener("click", () => {
+    const isChecked = taxSwitch.checked;
+
+    // Iterate over all listings
+    listings.forEach((listing) => {
+      const priceElement = listing.querySelector(".card-text b"); // Select the price element
+      const taxInfo = listing.querySelector(".tax-info"); // Select the tax info element
+
+      const basePrice = parseInt(priceElement.dataset.basePrice, 10); // Retrieve base price from the dataset
+      const gst = basePrice * 0.18; // Calculate GST
+      const totalPrice = basePrice + gst; // Calculate total price
+
+      if (isChecked) {
+        // Show GST and update price
+        taxInfo.style.display = "inline";
+        priceElement.textContent = `₹ ${totalPrice.toLocaleString("en-IN")}`; // Update the price
+      } else {
+        // Hide GST and revert to base price
+        taxInfo.style.display = "none";
+        priceElement.textContent = `₹ ${basePrice.toLocaleString("en-IN")}`; // Revert the price
+      }
+    });
+  });
+</script>
+
+
+   
+    
+</body>
+

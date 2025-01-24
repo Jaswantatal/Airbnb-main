@@ -1,5 +1,5 @@
-if(process.env.NODE_ENV != "production"){
-    require('dotenv').config()
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
 }
 
 const express = require('express');
@@ -9,7 +9,7 @@ const ejsMate = require("ejs-mate");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const passport = require("passport");
-const localStrategy = require("passport-local");
+const LocalStrategy = require("passport-local");
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const mongoose = require('mongoose');
@@ -19,24 +19,26 @@ const User = require("./models/user");
 const listingroute = require("./route/listing");
 const reviewroute = require("./route/review");
 const userroute = require("./route/user");
-const { listingSchema } = require("./schema");
 const ExpressError = require("./utils/expressError");
-const listing = require('./models/listing.js');
+
+const uri = process.env.URI
 
 
-const dbUrl = process.env.MONGOATLASURL;
+// MongoDB Configuration
+const dbUrl = process.env.MONGOATLASURL || "mongodb://localhost:27017/yourLocalDB";
 
+mongoose.connect(process.env.MONGOATLASURL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    ssl: true,
+    tlsAllowInvalidCertificates: false, // Set to false for production
+}).then(() => {
+    console.log("Connected to MongoDB");
+}).catch(err => {
+    console.error("Error connecting to MongoDB:", err);
+});
 
-main().then(()=>{
-    console.log("connected to DB")
-}).catch((err) =>{
-    console.log(err)
-})
-// Database Connection
-async function main() {
-    mongoose.connect(dbUrl);
-}
-
+    mongoose.set('debug', true);
 
 // App Configuration
 app.engine("ejs", ejsMate);
@@ -48,24 +50,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(cookieParser());
 
-//mongo connect config
+// Session Configuration with MongoStore
 const store = MongoStore.create({
     mongoUrl: dbUrl,
-    crypto: {
-        secret: process.env.SECRET
-        },
-    touchAfter: 24*3600,
-})
+    crypto: { secret: process.env.SECRET || "defaultsecret" },
+    touchAfter: 24 * 3600,
+});
 
-store.on("error", ()=>{
-    console.log("ERROR IN MONGO SESSION", err)
-}
-)
+store.on("error", (err) => {
+    console.error("Session store error:", err);
+});
 
-// Session Configuration
-const sessionOption = {
+const sessionOptions = {
     store,
-    secret: process.env.SECRET,
+    secret: process.env.SECRET || "defaultsecret",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -73,18 +71,16 @@ const sessionOption = {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-    }
+    },
 };
 
-
-
-app.use(session(sessionOption));
+app.use(session(sessionOptions));
 app.use(flash());
 
 // Passport Configuration
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new localStrategy(User.authenticate()));
+passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
@@ -102,9 +98,6 @@ app.use("/listings", listingroute);
 app.use("/listing/:id/review", reviewroute);
 app.use("/", userroute);
 
-
-  
-
 // Catch-all Route
 app.all("*", (req, res, next) => {
     next(new ExpressError(404, "Page not found"));
@@ -113,10 +106,11 @@ app.all("*", (req, res, next) => {
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     const { statusCode = 500, message = "Something went wrong" } = err;
-    res.render("listing/error.ejs", { message, statusCode });
+    res.status(statusCode).render("listing/error.ejs", { message, statusCode });
 });
 
 // Start the Server
-app.listen(2020, () => {
-    console.log("Server is running on http://localhost:2020");
+const PORT = process.env.PORT || 2020;
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

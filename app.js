@@ -21,24 +21,20 @@ const reviewroute = require("./route/review");
 const userroute = require("./route/user");
 const ExpressError = require("./utils/expressError");
 
-const uri = process.env.URI
-
-
 // MongoDB Configuration
 const dbUrl = process.env.MONGOATLASURL || "mongodb://localhost:27017/yourLocalDB";
 
-mongoose.connect(process.env.MONGOATLASURL, {
+mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    ssl: true,
-    tlsAllowInvalidCertificates: false, // Set to false for production
+    serverSelectionTimeoutMS: 20000, // 20 seconds timeout
 }).then(() => {
     console.log("Connected to MongoDB");
 }).catch(err => {
     console.error("Error connecting to MongoDB:", err);
 });
 
-    mongoose.set('debug', true);
+mongoose.set('debug', true);
 
 // App Configuration
 app.engine("ejs", ejsMate);
@@ -54,7 +50,7 @@ app.use(cookieParser());
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     crypto: { secret: process.env.SECRET || "defaultsecret" },
-    touchAfter: 24 * 3600,
+    touchAfter: 24 * 3600, // 24 hours
 });
 
 store.on("error", (err) => {
@@ -67,8 +63,8 @@ const sessionOptions = {
     resave: false,
     saveUninitialized: false,
     cookie: {
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
     },

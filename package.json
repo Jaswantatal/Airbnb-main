@@ -6,8 +6,8 @@
   "version": "1.0.0",
   "main": "node app.js",
   "scripts": {
-  "start": "node app.js"
-},
+    "start": "node app.js"
+  },
   "keywords": [],
   "author": "Jaswant",
   "license": "ISC",

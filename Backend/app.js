@@ -2,8 +2,13 @@ if(process.env.NODE_ENV != "production"){
     require('dotenv').config()
 }
 
+
 const express = require('express');
 const app = express();
+const path = require("path");
+
+app.use('/public', express.static(path.join(__dirname, '../frontend/public')));
+
 const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const cookieParser = require("cookie-parser");
@@ -13,7 +18,6 @@ const localStrategy = require("passport-local");
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const mongoose = require('mongoose');
-const path = require("path");
 
 const User = require("./models/user");
 const listingroute = require("./route/listing");
@@ -37,6 +41,7 @@ main().then(()=>{
 async function main() {
     mongoose.connect(dbUrl);
 }
+
 
 
 
@@ -117,6 +122,8 @@ app.use((err, req, res, next) => {
 });
 
 // Start the Server
-app.listen(2020, () => {
+const Port = process.env.PORT || 2020;
+
+app.listen(Port, () => {
     console.log("Server is running on http://localhost:2020");
 });

@@ -32,10 +32,13 @@ main().then(()=>{
 }).catch((err) =>{
     console.log(err)
 })
+
 // Database Connection
 async function main() {
     mongoose.connect(dbUrl);
 }
+
+
 
 
 // App Configuration
@@ -71,6 +74,7 @@ const sessionOption = {
         secure: process.env.NODE_ENV === 'production',
     }
 };
+
 
 
 
